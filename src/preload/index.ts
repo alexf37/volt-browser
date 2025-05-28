@@ -67,6 +67,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   navigateToUrl: (url: string) => {
     ipcRenderer.send("navigate-to-url", url);
   },
+  navigateBack: () => {
+    ipcRenderer.send("navigate-back");
+  },
   activateTab: (tabId: number) => {
     ipcRenderer.send("activate-tab", tabId);
   },

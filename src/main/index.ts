@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, WebContentsView, BrowserView } from "electron";
+import { app, BrowserWindow, ipcMain, WebContentsView, BrowserView } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
@@ -135,6 +135,13 @@ function createWindow(): void {
     const { x, y, contentWidth, contentHeight } = getCurrentContentViewSize();
     view.setBounds({ x, y, width: contentWidth, height: contentHeight });
     view.webContents.loadURL(url || "https://www.google.com");
+
+    // Handle new window requests (e.g., target="_blank" links)
+    view.webContents.setWindowOpenHandler((details) => {
+      // Load the URL in the current tab instead of opening a new window
+      view.webContents.loadURL(details.url);
+      return { action: "deny" }; // Prevent new window from opening
+    });
 
     // Inject CSS to create rounded corners using pseudo-elements
     view.webContents.on("dom-ready", () => {
@@ -276,6 +283,15 @@ function createWindow(): void {
     closeTab(tabId);
   });
 
+  ipcMain.on("navigate-back", () => {
+    if (activeTabId !== null) {
+      const activeView = tabs.get(activeTabId);
+      if (activeView && activeView.webContents.canGoBack()) {
+        activeView.webContents.goBack();
+      }
+    }
+  });
+
   ipcMain.handle("get-active-tab-id", () => {
     return activeTabId;
   });
@@ -298,7 +314,7 @@ function createWindow(): void {
   });
 
   // Initial Tab
-  createNewTab();
+  // createNewTab(); // Removed - no default tab on startup
 
   // Open DevTools in a separate window in development
   if (is.dev) {
@@ -307,11 +323,6 @@ function createWindow(): void {
 
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
-  });
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: "deny" };
   });
 
   // HMR for renderer base on electron-vite cli.
@@ -353,9 +364,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  app.quit();
 });
 
 // In this file you can include the rest of your app's specific main process

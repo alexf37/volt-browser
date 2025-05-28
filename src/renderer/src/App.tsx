@@ -177,6 +177,10 @@ function App(): JSX.Element {
     }
   }
 
+  function handleUrlInputClick(): void {
+    urlInputRef.current?.select();
+  }
+
   function handleTabClick(tabId: number): void {
     window.electronAPI.activateTab(tabId);
   }
@@ -263,6 +267,24 @@ function App(): JSX.Element {
           <div
             className={`flex items-center ${URL_BAR_HEIGHT_CONST_CLASS} border-b border-gray-700 px-3`}
           >
+            {/* Back button */}
+            <button
+              onClick={() => window.electronAPI.navigateBack()}
+              className="mr-2 p-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              title="Go back"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
             <input
               ref={urlInputRef}
               type="text"
@@ -271,6 +293,7 @@ function App(): JSX.Element {
               value={urlInputValue}
               onChange={handleUrlInputChange}
               onKeyPress={handleUrlInputKeyPress}
+              onClick={handleUrlInputClick}
             />
           </div>
 
@@ -366,6 +389,16 @@ function App(): JSX.Element {
         }}
       >
         {/* WebContentsView is managed by the main process and overlays this area */}
+        {tabs.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
+                Volt Browser
+              </h1>
+              <p className="text-gray-400 text-lg">Hover over the left edge to open a new tab</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

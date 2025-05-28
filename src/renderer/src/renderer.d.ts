@@ -15,6 +15,7 @@ declare global {
       onIamCornerMaskView: (callback: () => void) => () => void;
       createNewTab: (url?: string) => void;
       navigateToUrl: (url: string) => void;
+      navigateBack: () => void;
       activateTab: (tabId: number) => void;
       closeTab: (tabId: number) => void;
       sendMessage: (channel: string, ...args: unknown[]) => void;
